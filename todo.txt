@@ -1,0 +1,9 @@
+
+ - Inherit from PImage?
+   "public class Movie extends PImage implements PConstants { ... }"
+
+ - copy pixels, return PImage for read()?
+
+ - handle movieEvent()? 
+   How to pass current instance?
+
