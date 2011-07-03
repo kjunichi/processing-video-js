@@ -1,11 +1,11 @@
-	This is an attempt at writing a JavaScript companion to an existing
-	Java library, namely the Processing video library.
+  This is an attempt at writing a JavaScript companion to an existing
+  Java library, namely the Processing video library.
 	
-	One goal is to have video sketches run in JavaScript mode out of the 
-	box. Another is to come up with a recommendation on how to write or
-	wrap and package JavaScript libraries to make them available inside 
-	Processing 2.0 JavaScript mode (powered by Processing.js).
+  One goal is to have video sketches run in JavaScript mode out of the 
+  box. Another is to come up with a recommendation on how to write or
+  wrap and package JavaScript libraries to make them available inside 
+  Processing 2.0 JavaScript mode (powered by Processing.js).
 	
-	Note: Capture will currently not be implemented as it's not supported
-	by browsers yet.
+  Note: Capture will currently not be implemented as it's not supported
+  by browsers yet.
 	

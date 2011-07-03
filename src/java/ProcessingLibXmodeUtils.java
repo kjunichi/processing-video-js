@@ -2,15 +2,39 @@
 
 import java.util.jar.*;
 import java.util.*;
-
 import java.io.*;
-
 import java.net.*;
-
 import java.lang.reflect.*;
+
+/**
+ *	This will generate a JavaScript object structure for a given
+ *	Java archive (jar).
+ */
 
 public class ProcessingLibXmodeUtils
 {
+	/**
+	 *	Walks contents or a jar and generates a js object structure
+	 *  for it. For example:
+	 *
+	 *	This jar:
+	 *    - processing.video.Movie
+	 *    - processing.video.Capture
+	 *    - processing.magic.Tool
+	 *
+	 *  produces this js code:
+	 *	  {
+	 *	    processing: {
+	 *		  video: {
+	 *			Movie: {},
+	 *			Capture: {}
+	 *		  },
+	 *		  magic: {
+	 *			Tool: {}
+	 *		  }
+	 *	    }
+	 *    }
+	 */
 	public List getClassNamesInPackage( String jarName ) 
 	{
 		ArrayList<String> classes = new ArrayList<String>();
@@ -189,6 +213,10 @@ public class ProcessingLibXmodeUtils
 		}
 	}
 
+    /**
+ 	 *	Usage:
+	 *  java ProcessingLibXmodeUtils /path/to/the/file.jar [/path/to/other/file.jar]
+	 */
 	public static void main (String[] args) 
 	{
 		List classesList = null;
