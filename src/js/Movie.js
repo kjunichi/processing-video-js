@@ -1,227 +1,300 @@
 
-	var Movie = this.Movie = (function(){
-		
-		/*
-		Movie(parent, filename/url)
-		Movie(parent, filename/url, fps)
-		*/
-		var MovieImpl = function () {
-			
-			if ( arguments.length < 2 )
-				throw("Movie() expects more arguments, "+arguments.length+" given.");
-			
-			// handle passed arguments
-			
-			var parent = arguments[0];
-			var urls = [];
-			if (arguments[1] instanceof Array) urls = arguments[1];
-			else {
-				var u = arguments[1].split(";");
-				for ( var i in u ) urls.push(u[i]);
-			}
-			var fps = parseInt(arguments[2]);
-			
-			/**
-			 *	PRIVATE VARS, FUNCTIONS
-			 */
-			
-			var doLoop = false, newFrameAvailable = false;
+var Movie = (function(){
+    
+    var isChrome;
 
-			var videoElement = null;
-			var canvasElement = null, canvasContext = null;
-			var mediaLoaded = false;
-			var playOnLoad = false;
-			var movieEventFn = null;
+    var listeners = [];
+    var sketch;
+    var element, movie, frame;
 
-			function loadMovie () {
-					// https://developer.mozilla.org/en/HTML/Element/video
-					// https://developer.mozilla.org/en/DOM/HTMLMediaElement
-					videoElement = document.createElement('video');
-					//videoElement.width = '1';
-					//videoElement.height = '1';
-					//videoElement.controls = 'controls';
-					videoElement.preload = 'auto';
-					videoElement.autoplay = undefined;
-					for ( var i = 0; i < urls.length; i++ ) {
-						var src = document.createElement('source');
-						src.src = urls[i];
-						videoElement.appendChild(src);
-					}
-					
-					function handleOnLoad () {
-						if ( mediaLoaded ) return;
-						mediaLoaded = true;
-						videoElement.width  = __self__.width = videoElement.videoWidth;
-						videoElement.height = __self__.height = videoElement.videoHeight;
-						/*canvasElement = document.createElement('canvas');
-						canvasElement.width  = videoElement.videoWidth;
-						canvasElement.height = videoElement.videoHeight;
-						canvasContext = canvasElement.getContext('2d');
-						document.body.appendChild(canvasElement);*/
-						
-						// treat this as first frame
-						newFrameAvailable = true;
-						__self__.read();
-						
-						if ( playOnLoad ) videoElement.play();
-					}
-					bindEvent(videoElement, 'canplaythrough', handleOnLoad);
-					bindEvent(videoElement, 'load', handleOnLoad);
-					
-					bindEvent(videoElement, 'ended', function () {
-						if ( doLoop ) {
-							videoElement.currentTime = 0.001; /*Webkit fix: http://bit.ly/kMNikb*/
-							videoElement.play();
-						}
-					});
-					
-					bindEvent(videoElement, 'timeupdate', function () {
-						newFrameAvailable = true;
-						triggerMovieEvent();
-					});
-					
-					// Safari won't load it if it's not on the page
-					videoElement.style = videoElement.style || {};
-					videoElement.style.position = "absolute";
-					videoElement.style.top  = "-1000px";
-					videoElement.style.left = "-1000px";
-					document.body.appendChild(videoElement);
-			}
+    var shouldLoop = false;
+    var isAvailable = false;
+    var lastTime = -1, pollerTs = -1;
+    var fpsToSeconds;
 
-			function setMovieEventListener ( listener ) {
-				if ( typeof listener == 'object' 
-					 && 'movieEvent' in listener
-					 && typeof listener['movieEvent'] == 'function' ) {
-						movieEventFn = function(){
-							listener['movieEvent'].call(listener, __self__);
-						};
-					}
-			}
+    var callListeners = function (meth, args) {
+        for ( var i = 0, k = listeners.length; i < k; i++ ) {
+            if ( meth in listeners[i] ) {
+                listeners[i][meth].apply(listeners[i],args);
+            }
+        }
+    }
+    
+    var addVideoEventListeners = function () {
+        
+        // TODO:
+        // watching properties:
+        // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object/defineProperty
 
-			function triggerMovieEvent () {
-				if ( movieEventFn !== null ) {
-					movieEventFn.call();
-				}
-			}
+        var events = ['abort', 'canplay', 'canplaythrough', 'durationchange', 
+        'emptied', 'ended', 'error', 'loadeddata', 'loadedmetadata', 
+        'loadstart', 'mozaudioavailable', 'pause', 'play', 'playing', 
+        'progress', 'ratechange', 'seeked', 'seeking', 'suspend', 'timeupdate', 
+        'volumechange', 'waiting'];
 
-			function ensureVideoElement () {
-				return videoElement !== null && videoElement.readyState > 0;
-			}
-			
-			function bindEvent ( element, eventType, eventHandler, bubbleUp ) {
-				if (element.addEventListener){
-					element.addEventListener(eventType, eventHandler, (bubbleUp || false)); 
-				} else if (element.attachEvent){
-					element.attachEvent('on'+eventType, eventHandler);
-				}
-			}
-			
-			/**
-			 *	 PUBLIC API
-			 */
+        for ( var i = 0; i < events.length; i++ ) {
+            var fnName = "on"+events[i][0].toUpperCase()+events[i].substring(1);
+            try {
+                var fn = eval( fnName );
+                element.addEventListener(events[i],fn);
+            } catch (e) {
+                // ignore
+            }
+        }
+    }
 
-			this.width = 0;
-			this.height = 0;
-			
-			// Reads the current frame from the movie
-			// http://processing.org/reference/libraries/video/Movie_read_.html
-			this.read = function () {
-				if ( /*canvasContext == null ||*/ !ensureVideoElement() ) return null;
-				//canvasContext.drawImage(videoElement,0,0);
-				this.sourceImg = videoElement; //canvasContext.getImageData(0,0,canvasElement.width,canvasElement.height);
-				return this;
-			};
-			
-			// Returns true when a new frame is available
-			// http://processing.org/reference/libraries/video/Movie_available_.html
-			this.available = function () {
-				return ensureVideoElement() && newFrameAvailable;
-			};
-			
-			// Plays the movie once
-			// http://processing.org/reference/libraries/video/Movie_play_.html
-			this.play = function () {
-				if ( ensureVideoElement() ) videoElement.play();
-				else playOnLoad = true;
-			};
-			
-			// Pauses the movie playback
-			// http://processing.org/reference/libraries/video/Movie_pause_.html
-			this.pause = function () {
-				if ( ensureVideoElement() ) videoElement.pause();
-				else playOnLoad = false;
-			};
-			
-			// Stops the movie playback
-			// http://processing.org/reference/libraries/video/Movie_stop_.html
-			this.stop = function () {
-				if ( ensureVideoElement() ) {
-					videoElement.pause();
-					videoElement.currentTime = 0;
-				} else {
-					playOnLoad = false;
-				}
-			};
-			
-			// Plays the movie continuously
-			// http://processing.org/reference/libraries/video/Movie_loop_.html
-			this.loop = function () {
-				doLoop = true;
-			};
-			
-			// Stops the movie from looping
-			// http://processing.org/reference/libraries/video/Movie_noLoop_.html
-			this.noLoop = function () {
-				doLoop = false;
-			};
-			
-			// 	Jumps to a specific location in the movie
-			// http://processing.org/reference/libraries/video/Movie_jump_.html
-			this.jump = function ( sec ) {
-				if ( parseFloat(sec) === 0 ) sec = 0.001; /*Webkit fix: http://bit.ly/kMNikb*/
-				if ( ensureVideoElement() ) videoElement.currentTime = sec;
-			};
-			
-			// Returns the total length of the movie
-			// http://processing.org/reference/libraries/video/Movie_duration_.html
-			this.duration = function () {
-				return ensureVideoElement() ? videoElement.duration : 0;
-			};
-			
-			// Returns the current playback position
-			// http://processing.org/reference/libraries/video/Movie_time_.html
-			this.time = function () {
-				return ensureVideoElement() ? videoElement.currentTime : -1;
-			};
-			
-			// Sets a multiplier for how fast/slow a movie should play
-			// http://processing.org/reference/libraries/video/Movie_speed_.html
-			this.speed = function ( speed ) {
-				if ( ensureVideoElement() ) videoElement.playbackRate = speed;
-			};
-			
-			// Sets how often new frames are read from the movie
-			// http://processing.org/reference/libraries/video/Movie_frameRate_.html
-			this.frameRate = function ( fps ) {
-				// not sure how to do this as <video> does not give original fps
-			};
-			
-			// let's get started
-			
-			this.sourceImg = {}; // trick Processing.js into using fastImage
-			
-			var __self__ = this;
-			loadMovie();
-			setMovieEventListener(parent);
-		};
-		
-		return MovieImpl;
-		
-	})();
-	
-	// This let's Processing/Java code legally call Movie with it's
-	// full namespace.
-	var processing = this.processing = processing || {};
-	processing.video = processing.video || {};
-	processing.video.Movie = Movie;
-	
+    var onError = function (evt) {
+        var errMsg = "";
+        switch ( element.networkState ) {
+            case element.NETWORK_EMPTY:
+                errMsg = "Loading did not start yet."; break;
+            case element.NETWORK_IDLE:
+                errMsg = "Loading did not start yet."; break;
+            case element.NETWORK_LOADING:
+                errMsg = "Loading has not finished yet."; break;
+            case element.NETWORK_NO_SOURCE:
+                errMsg = "The source provided is missing. "+element.src; break;
+            default:
+                errMsg = "Not sure what happened ... care to report it to fjenett@gmail.com ?";
+        }
+        alert(errMsg);
+    }
+
+    var onLoadedmetadata = function (evt) {
+        element.setAttribute('width',element.videoWidth);
+        element.setAttribute('height',element.videoHeight);
+        fpsToSeconds = 1000.0/element.fps;
+    }
+
+    var onTimeupdate = function (evt) {
+        if ( shouldLoop && isChrome && element.currentTime === element.duration ) {
+            element.addEventListener('canplay',function(){
+                element.play();
+                startPolling();
+            });
+            stopPolling();
+            element.src = element.currentSrc;
+        }
+    }
+
+    var startPolling = function () {
+        var doPoll = function () {
+            if ( element.readyState < 3 ) {
+                isAvailable = false;
+            } else {
+                var now = element.currentTime;
+                isAvailable = lastTime !== now;
+                if ( isAvailable ) {
+                    callListeners('movieEvent',[movie]);
+                }
+                lastTime = now;
+            }
+            pollerTs = setTimeout( doPoll, 1000/25.0 );
+        }
+        doPoll();
+    }
+
+    var stopPolling = function () {
+        clearTimeout(pollerTs);
+    }
+
+    // http://en.wikipedia.org/wiki/Comparison_of_layout_engines_(HTML5_Media)
+    
+    // https://developer.mozilla.org/en/DOM/HTMLVideoElement
+    // https://developer.mozilla.org/en/DOM/HTMLMediaElement
+    // https://developer-new.mozilla.org/en-US/docs/DOM/Media_events
+    
+    // https://developer.mozilla.org/En/Manipulating_video_using_canvas
+    // http://www.html5videoguide.net/presentations/HTML5_Video_LCA2011/
+        
+    var Movie = function () {
+
+        var opts = {};
+        
+        if ( arguments.length == 1 && typeof arguments[0] == 'object' ) {
+            opts = arguments[0];
+        } else if (arguments.length >= 2) {
+            var args = Array.prototype.slice.call(arguments);
+            // var-args assumes: listener, src1, src2, …, srcN
+            var l = args.shift();
+            opts = {
+                src: args,
+                listener: l
+            };
+        } else {
+            throw('Wrong number of args passed to Movie()!');
+        }
+
+        element = opts.element;
+        if ( !opts.element && opts.src ) {
+            element = document.createElement('video');
+            element.setAttribute( 'crossorigin', 'anonymous' );
+            //element.setAttribute( 'controls', 'controls' );
+            //element.setAttribute( 'src', opts.src );
+            for ( var i = 0, k = opts.src.length; i < k; i++ ) {
+                var source = document.createElement('source');
+                source.setAttribute('src', opts.src[i]);
+                element.appendChild(source);
+            }
+            var container = document.createElement('div');
+            container.style.position = 'absolute';
+            container.style.left = '-10000px';
+            container.style.top = '-10000px';
+            // container.style.width = '320px';
+            // container.style.height = '240px';
+            container.appendChild( element );
+            document.body.appendChild( container );
+        }
+
+
+        shouldLoop = 'loop' in element;
+        
+        listeners = [];
+        if ( opts.listener )
+        {
+            listeners.push(opts.listener);
+            sketch = opts.listener;
+            frame = new sketch.PImage();
+        }
+            
+        addVideoEventListeners();
+
+        isChrome = navigator.appVersion.toLowerCase().indexOf('chrome') >= 0;
+
+        movie = this;
+    }
+    
+    Movie.prototype = {
+        /* sets the volume */
+        volume: function ( vol ) {
+            return element.volume( vol );
+        },
+        /* Reads the current frame of the movie. */
+        read: function () {
+            frame = new sketch.PImage;
+            //frame.sourceImg = element;
+            frame.fromHTMLImageData(element);
+            return frame;
+        },
+        /* Returns "true" when a new movie frame is available to read. */
+        available: function () {
+            return isAvailable;
+        },
+        /* Play the movie */
+        play: function () {
+            element.play();
+            startPolling();
+        },
+        isPlaying : function () {
+            return !element.paused;
+        },
+        /* Pause the movie */
+        pause: function () {
+            element.pause();
+            stopPolling();
+        },
+        isPaused : function () {
+            return element.paused;
+        },
+        /* Stop the movie */
+        stop: function () {
+            element.stop();
+            stopPolling();
+        },
+        /* Set loop attribute */
+        loop : function () {
+          shouldLoop = true;
+          element.setAttribute('loop','loop');
+        },
+        /* Set loop attribute */
+        noLoop: function () {
+          shouldLoop = false;
+          element.removeAttribute('loop');
+        },
+        isLooping : function () {
+          return shouldLoop;
+        },
+        /* Jump to a specific second (from float) in the video */
+        jump: function ( seconds ) {
+            element.currentTime = seconds;
+        },
+        /* Return duration in seconds with frac (as float) */
+        duration: function () {
+            return element.duration;
+        },
+        /* Return video current time as seconds with frac (as float) */
+        time: function () {
+            return element.currentTime;
+        },
+        /* Set playback speed to be scaled by given value (as float) */
+        speed: function ( rate ) {
+            if ( rate !== 0.0 )
+                element.playbackRate = rate;
+            else
+            {
+                element.pause();
+            }
+        },
+        /* Set the frame rate of the movie in fps */
+        frameRate: function ( rate ) {
+            // can't as we can not get the fps from the movie ... ideas?
+            throw( 'Please use speed() instead' );
+        },
+        /* ? */
+        ready: function () {
+            return element.readyState > 2;
+        },
+        /*  */
+        dispose: function () {
+            this.stop();
+            document.body.removeChild(element);
+            delete element;
+        },
+        /*  */
+        newFrame: function () {
+            return this.available();
+        },
+        /*  */
+        getFilename: function () {
+            return element.currentSrc;
+        },
+        /* PImage inheritance */
+        /* http://processing.org/reference/PImage.html */
+        get: function () {
+            return frame.get.apply(frame,arguments);
+        },
+        set: function () {
+            return frame.set.apply(frame,arguments);
+        },
+        copy: function () {
+            return frame.copy.apply(frame,arguments);
+        },
+        mask: function () {
+            return frame.mask.apply(frame,arguments);
+        },
+        blend: function () {
+            return frame.blend.apply(frame,arguments);
+        },
+        filter: function () {
+            return frame.filter.apply(frame,arguments);
+        },
+        save: function () {
+            return frame.save.apply(frame,arguments);
+        },
+        resize: function (){
+            return frame.resize.apply(frame,arguments);
+        },
+        loadPixels: function () {
+            return frame.loadPixels.apply(frame,arguments);
+        },
+        updatePixels: function () {
+            return frame.updatePixels.apply(frame,arguments);
+        }
+        /*, toImageData: function () {
+            return frame.toImageData.apply(frame,arguments);
+        }*/
+    };
+    
+    return Movie;
+    
+})();
