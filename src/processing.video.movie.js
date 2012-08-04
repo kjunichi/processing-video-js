@@ -1,5 +1,5 @@
 
-var Movie = (function(){
+var Movie = (function(window,document){
     
     var isChrome;
 
@@ -67,13 +67,15 @@ var Movie = (function(){
     }
 
     var onTimeupdate = function (evt) {
-        if ( shouldLoop && isChrome && element.currentTime === element.duration ) {
-            element.addEventListener('canplay',function(){
-                element.play();
-                startPolling();
-            });
-            stopPolling();
-            element.src = element.currentSrc;
+        if ( shouldLoop && isChrome ) {
+            if ( element.currentTime === element.duration ) {
+                element.addEventListener('canplay',function(){
+                    element.play();
+                    startPolling();
+                });
+                stopPolling();
+                element.src = element.currentSrc;
+            }
         }
     }
 
@@ -138,14 +140,13 @@ var Movie = (function(){
             }
             var container = document.createElement('div');
             container.style.position = 'absolute';
-            container.style.left = '-10000px';
-            container.style.top = '-10000px';
+            container.style.left = '0px'||'-10000px';
+            container.style.top = '0px'||'-10000px';
             // container.style.width = '320px';
             // container.style.height = '240px';
             container.appendChild( element );
             document.body.appendChild( container );
         }
-
 
         shouldLoop = 'loop' in element;
         
@@ -159,7 +160,7 @@ var Movie = (function(){
             
         addVideoEventListeners();
 
-        isChrome = navigator.appVersion.toLowerCase().indexOf('chrome') >= 0;
+        isChrome = window.navigator.appVersion.toLowerCase().indexOf('chrome') >= 0;
 
         movie = this;
     }
@@ -296,4 +297,4 @@ var Movie = (function(){
     
     return Movie;
     
-})();
+})(window,document);

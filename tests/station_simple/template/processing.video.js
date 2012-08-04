@@ -1,30 +1,30 @@
-var Movie = function() {
-  var f = [], h, b, k, a, g = !1, i = !1, l = -1, j = -1, n = function() {
+var Movie = function(o, f) {
+  var g = [], j, b, l, a, h = !1, i = !1, m = -1, k = -1, p = function() {
     for(var c = "abort,canplay,canplaythrough,durationchange,emptied,ended,error,loadeddata,loadedmetadata,loadstart,mozaudioavailable,pause,play,playing,progress,ratechange,seeked,seeking,suspend,timeupdate,volumechange,waiting".split(","), a = 0;a < c.length;a++) {
-      var f = "on" + c[a][0].toUpperCase() + c[a].substring(1);
+      var g = "on" + c[a][0].toUpperCase() + c[a].substring(1);
       try {
-        var e = eval(f);
+        var e = eval(g);
         b.addEventListener(c[a], e)
-      }catch(g) {
+      }catch(f) {
       }
     }
-  }, o = function() {
+  }, q = function() {
     var a = function() {
       if(3 > b.readyState) {
         i = !1
       }else {
         var d = b.currentTime;
-        if(i = l !== d) {
-          for(var g = [k], e = 0, h = f.length;e < h;e++) {
-            "movieEvent" in f[e] && f[e].movieEvent.apply(f[e], g)
+        if(i = m !== d) {
+          for(var f = [l], e = 0, h = g.length;e < h;e++) {
+            "movieEvent" in g[e] && g[e].movieEvent.apply(g[e], f)
           }
         }
-        l = d
+        m = d
       }
-      j = setTimeout(a, 40)
+      k = setTimeout(a, 40)
     };
     a()
-  }, m = function() {
+  }, n = function() {
     var c = {};
     if(1 == arguments.length && "object" == typeof arguments[0]) {
       c = arguments[0]
@@ -37,56 +37,57 @@ var Movie = function() {
     }
     b = c.element;
     if(!c.element && c.src) {
-      b = document.createElement("video");
+      b = f.createElement("video");
       b.setAttribute("crossorigin", "anonymous");
       for(var d = 0, i = c.src.length;d < i;d++) {
-        var e = document.createElement("source");
+        var e = f.createElement("source");
         e.setAttribute("src", c.src[d]);
         b.appendChild(e)
       }
-      d = document.createElement("div");
+      d = f.createElement("div");
       d.style.position = "absolute";
-      d.style.left = "-10000px";
-      d.style.top = "-10000px";
+      d.style.left = "0px";
+      d.style.top = "0px";
       d.appendChild(b);
-      document.body.appendChild(d)
+      f.body.appendChild(d)
     }
-    g = "loop" in b;
-    f = [];
-    c.listener && (f.push(c.listener), h = c.listener, a = new h.PImage);
-    n();
-    navigator.appVersion.toLowerCase().indexOf("chrome");
-    k = this
+    h = "loop" in b;
+    g = [];
+    c.listener && (g.push(c.listener), j = c.listener, a = new j.PImage);
+    p();
+    o.navigator.appVersion.toLowerCase().indexOf("chrome");
+    l = this
   };
-  m.prototype = {volume:function(a) {
+  n.prototype = {volume:function(a) {
     return b.volume(a)
   }, read:function() {
-    a = new h.PImage;
+    a = new j.PImage;
     a.fromHTMLImageData(b);
+    console.log(a);
     return a
   }, available:function() {
     return i
   }, play:function() {
     b.play();
-    o()
+    q()
   }, isPlaying:function() {
     return!b.paused
   }, pause:function() {
     b.pause();
-    clearTimeout(j)
+    clearTimeout(k)
   }, isPaused:function() {
     return b.paused
   }, stop:function() {
     b.stop();
-    clearTimeout(j)
+    clearTimeout(k)
   }, loop:function() {
-    g = !0;
+    h = !0;
     b.setAttribute("loop", "loop")
   }, noLoop:function() {
-    g = !1;
+    h = !1;
     b.removeAttribute("loop")
   }, isLooping:function() {
-    return g
+    return h
   }, jump:function(a) {
     b.currentTime = a
   }, duration:function() {
@@ -101,7 +102,7 @@ var Movie = function() {
     return 2 < b.readyState
   }, dispose:function() {
     this.stop();
-    document.body.removeChild(b);
+    f.body.removeChild(b);
     delete b
   }, newFrame:function() {
     return this.available()
@@ -128,5 +129,5 @@ var Movie = function() {
   }, updatePixels:function() {
     return a.updatePixels.apply(a, arguments)
   }};
-  return m
-}();
+  return n
+}(window, document);

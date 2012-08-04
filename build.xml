@@ -78,7 +78,9 @@
 			</sources>
 		</jscomp>
 
-		
+		<exec executable="/bin/bash">
+			<arg value="${res}/CopyDistToTests.sh"/>
+		</exec>
 
 	</target>
   	
