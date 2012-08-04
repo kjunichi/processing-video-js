@@ -172,7 +172,6 @@ var Movie = (function(){
         /* Reads the current frame of the movie. */
         read: function () {
             frame = new sketch.PImage;
-            //frame.sourceImg = element;
             frame.fromHTMLImageData(element);
             return frame;
         },

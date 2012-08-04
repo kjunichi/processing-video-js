@@ -1,0 +1,117 @@
+<project name="Processing video library for JavaScript" default="build" basedir="./">
+    
+	<description>
+        
+		See README
+		
+    </description>
+	
+	<!-- + + + + + + + + + + + + + + + + + + + + + + + + + + + +
+		SETTINGS
+	 + + + + + + + + + + + + + + + + + + + + + + + + + + + + -->
+	<target name="settings">
+
+		<property name="author" 		value="Florian Jenett"/>
+		<property name="copyright" 		value="(c) 2012"/>
+		<property name="version"		value="0.0.0"/>
+
+		<property name="libName" 		value="processing.video"/>
+
+		<property name="src" 			location="src"/>
+		<property name="bin" 			location="bin"/>
+		<property name="doc" 			location="documentation"/>
+		<property name="build" 			location="build"/>
+		<property name="res" 			location="resources"/>
+		<property name="dist" 			location="dist"/>
+
+		<property name="local_resources" value="/Users/fjenett/Dev/Processing/Libraries/_resources/"/>
+		
+		<!-- GOOGLE CLOSURE COMPILER -->
+		<taskdef name="jscomp" classname="com.google.javascript.jscomp.ant.CompileTask"
+		           			   classpath="${local_resources}closure-compiler/compiler.jar"/>
+	</target>
+	
+	<!-- + + + + + + + + + + + + + + + + + + + + + + + + + + + +
+		INIT
+	 + + + + + + + + + + + + + + + + + + + + + + + + + + + + -->
+	<target name="init" depends="settings">
+			
+		<buildnumber file="${res}/build.number"/>
+
+		<tstamp> <!-- Create the time stamp -->
+			<format property="date" pattern="MM/dd/yyyy" offset="0" unit="hour"/>
+		</tstamp>
+	
+		<echo>Building ${libName} ... ${version}, build #${build.number} on ${date}</echo>
+
+		<mkdir dir="${dist}"/>
+	</target>
+  	
+	<!-- + + + + + + + + + + + + + + + + + + + + + + + + + + + +
+		COMPILE
+	 + + + + + + + + + + + + + + + + + + + + + + + + + + + + -->
+	<target name="compile" depends="init" >  	
+		
+		<mkdir dir="${bin}"/>
+		
+		<concat destfile="${bin}/${libName}.js">
+			<!-- this list is sorted! -->
+			<fileset dir="${src}">
+				<include name="*.js" />
+			</fileset>
+		</concat>
+	</target>
+	
+	<!-- + + + + + + + + + + + + + + + + + + + + + + + + + + + +
+		BUILD
+	 + + + + + + + + + + + + + + + + + + + + + + + + + + + + -->
+	<target name="build" depends="compile" >
+  
+	  	<mkdir dir="${dist}" />
+		<jscomp compilationLevel="simple" 
+				warning="default" 
+		        debug="false" 
+				output="${dist}/${libName}.js"
+				prettyprint="true" >
+			<sources dir="${bin}">
+				<file name="${libName}.js" />
+			</sources>
+		</jscomp>
+
+		
+
+	</target>
+  	
+	<!-- + + + + + + + + + + + + + + + + + + + + + + + + + + + +
+		DOCUMENTATION
+	 + + + + + + + + + + + + + + + + + + + + + + + + + + + + -->
+	<target name="documentation" depends="build">
+		
+	</target>
+
+	<!-- + + + + + + + + + + + + + + + + + + + + + + + + + + + +
+		INSTALL
+	 + + + + + + + + + + + + + + + + + + + + + + + + + + + + -->
+	<target name="install" depends="build">
+
+	</target>
+  	
+	<!-- + + + + + + + + + + + + + + + + + + + + + + + + + + + +
+		RELEASE
+	 + + + + + + + + + + + + + + + + + + + + + + + + + + + + -->
+	<target name="release" depends="documentation">
+		
+	</target>
+ 
+	<!-- + + + + + + + + + + + + + + + + + + + + + + + + + + + +
+		CLEAN
+	 + + + + + + + + + + + + + + + + + + + + + + + + + + + + -->
+	<target name="clean" depends="settings" >
+		<delete dir="${bin}" />
+		<delete dir="${doc}" />
+		<delete dir="${build}" />
+		<delete dir="${dist}" />
+	</target>
+	
+</project>
+

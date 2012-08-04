@@ -21,12 +21,12 @@
  {
      background( 255 );
      
+     if ( movie.available() )
+     {
+         movie.read();
+     }
+     
      image( movie.get(), 0, 0 );
- }
- 
- void movieEvent ( Movie m )
- {
-     m.read();
  }
  
  void mousePressed ()

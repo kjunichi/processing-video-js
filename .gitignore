@@ -1,4 +1,11 @@
 
+bin
+dist
+build
+
+web-export
+
+
 thumbs.db
 .DS_Store
 
