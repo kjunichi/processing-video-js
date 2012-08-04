@@ -1,11 +1,14 @@
 /**
- *    Classic "At the station" example showing usage of movieEvent callback.
+ *    Playback speeds, default is 1.0, this is running at 0.25.
+ *
+ *    <p>This is currently not available in FireFox.</p>
  */
  
  import processing.video.Movie;
  
  Movie movie;
- PImage frame;
+ float secPerFrame = 1.0 / 25.0;
+ float currentSec = 0.0;
  
  void setup ()
  {
@@ -13,19 +16,15 @@
      
      String m = "station";
      movie = new Movie( this, m+".mp4", m+".ogv", m+".webm" );
+     movie.speed(0.25);
      movie.loop();
      movie.play();
  }
  
  void draw ()
  {
-     background( 255 );
-     
-     image( movie, 0, 0 );
+     image( movie, 0, 0, width, height );
  }
- 
- // movieEvent()
- // .. is being called whenever a new frame is available
  
  void movieEvent ( Movie m )
  {

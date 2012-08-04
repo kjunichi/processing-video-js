@@ -1,5 +1,5 @@
 /**
- *    Another stab at processing.video.Movie for js.
+ *    Simple "At the station example".
  */
  
  import processing.video.Movie;
@@ -26,17 +26,5 @@
          movie.read();
      }
      
-     image( movie.get(), 0, 0 );
- }
- 
- void mousePressed ()
- {
-     if ( movie.isPlaying() )
-     {
-         movie.pause();
-     }
-     else
-     {
-         movie.play();
-     }
+     image( movie, 0, 0 );
  }
