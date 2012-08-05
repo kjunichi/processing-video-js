@@ -60,5 +60,9 @@
     element   optional DOM video node, no need to provide sources then
     listener  {}, should implement movieEvent(Movie)
     poster    optional, path to an image to use as poster-frame
+  
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  Some work hours and content provided by mint.gs
 
 

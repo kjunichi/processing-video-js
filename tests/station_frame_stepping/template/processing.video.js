@@ -1,3 +1,11 @@
+/**
+ *  Attempting to write a Movie.class for Processing.js
+ *
+ *  https://github.com/fjenett/processing-video-js
+ *
+ *  
+ *  fjenett - 2012
+ */
 
 var Movie = (function(window,document){
     
@@ -16,6 +24,8 @@ var Movie = (function(window,document){
     var isAvailable = false;
     var lastTime = -1, pollerTs = -1;
     var fpsToSeconds;
+
+    var fps = 25.0;
 
     var callListeners = function (meth, args) {
         for ( var i = 0, k = listeners.length; i < k; i++ ) {
@@ -105,7 +115,7 @@ var Movie = (function(window,document){
                 }
                 lastTime = now;
             }
-            pollerTs = setTimeout( doPoll, 1000/25.0 );
+            pollerTs = setTimeout( doPoll, 1000/fps );
         }
         doPoll();
     }
@@ -134,7 +144,7 @@ var Movie = (function(window,document){
             // var-args assumes: listener, src1, src2, …, srcN
             var l = args.shift();
             opts = {
-                src: args,
+                sources: args,
                 listener: l
             };
         } else {
@@ -142,30 +152,28 @@ var Movie = (function(window,document){
         }
 
         element = opts.element;
-        if ( !opts.element && opts.src ) {
+        if ( !opts.element && opts.sources ) {
             element = document.createElement('video');
             element.setAttribute( 'crossorigin', 'anonymous' );
             //element.setAttribute( 'poster', 'poster.gif' );
             //element.setAttribute( 'controls', 'controls' );
             //element.setAttribute( 'src', opts.src );
-            for ( var i = 0, k = opts.src.length; i < k; i++ ) {
+            for ( var i = 0, k = opts.sources.length; i < k; i++ ) {
                 var source = document.createElement('source');
-                source.setAttribute('src', opts.src[i]);
+                source.setAttribute('src', opts.sources[i]);
                 element.appendChild(source);
             }
             var container = document.createElement('div');
             container.style.position = 'absolute';
             container.style.left = '-10000px';
             container.style.top = '-10000px';
-            // container.style.width = '320px';
-            // container.style.height = '240px';
             container.appendChild( element );
             document.body.appendChild( container );
         }
 
         shouldLoop = ('loop' in element) ? element.loop : false;
 
-        if ( 'poster' in element && element.poster ) {
+        if ( ('poster' in element && element.poster) || opts.poster ) {
             posterImage = new Image();
             posterImage.onload = function () {
                 if ( element.paused ) {
@@ -199,6 +207,10 @@ var Movie = (function(window,document){
     
     Movie.prototype = {
         /*  */
+        setSourceFrameRate: function ( frameRate ) {
+            fps = frameRate;
+        },
+        /*  */
         getElement: function () {
             return element;
         },
@@ -210,7 +222,13 @@ var Movie = (function(window,document){
         /* Reads the current frame of the movie. */
         read: function () {
             frame = new sketch.PImage;
-            frame.fromHTMLImageData(element);
+            try {
+                frame.fromHTMLImageData(element);
+                //frame.isRemote = false;
+            } catch (e) {
+                //console.log(e);
+                throw(e);
+            }
             return frame;
         },
         /* Returns "true" when a new movie frame is available to read. */
@@ -278,11 +296,13 @@ var Movie = (function(window,document){
         /* Set the frame rate of the movie in fps */
         frameRate: function ( rate ) {
             // can't as we can not get the fps from the movie ... ideas?
-            throw( 'Please use speed() instead' );
+            //throw( 'Please use speed() instead' );
+            this.speed( rate / fps );
         },
         /* GSVideo? */
         getSourceFrameRate: function () {
-            throw( 'This is not available for web video' );
+            //throw( 'This is not available for web video' );
+            fps;
         },
         /* GSVideo? */
         goToBeginning: function () {
@@ -365,6 +385,13 @@ var Movie = (function(window,document){
     /* PImage.pixels */
     Movie.prototype.__defineGetter__('pixels',function(){
         return frame.pixels;
+    });
+    /* PImage.isRemote - Processing.js internally used */
+    Movie.prototype.__defineGetter__('isRemote',function(){
+        return frame.isRemote;
+    });
+    Movie.prototype.__defineSetter__('isRemote',function(v){
+        frame.isRemote = v;
     });
     /* PImage.sourceImg - Processing.js internally used */
     Movie.prototype.__defineGetter__('sourceImg',function(){
