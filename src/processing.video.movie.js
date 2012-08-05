@@ -17,6 +17,8 @@ var Movie = (function(window,document){
     var lastTime = -1, pollerTs = -1;
     var fpsToSeconds;
 
+    var fps = 25.0;
+
     var callListeners = function (meth, args) {
         for ( var i = 0, k = listeners.length; i < k; i++ ) {
             if ( meth in listeners[i] ) {
@@ -26,29 +28,28 @@ var Movie = (function(window,document){
     }
     
     var addVideoEventListeners = function () {
-        
-        // TODO:
-        // watching properties:
-        // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object/defineProperty
 
-        // TODO:
-        // need to rewrite this so closure is not removing it from the source
+        // var events = ['abort', 'canplay', 'canplaythrough', 'durationchange', 
+        // 'emptied', 'ended', 'error', 'loadeddata', 'loadedmetadata', 
+        // 'loadstart', 'mozaudioavailable', 'pause', 'play', 'playing', 
+        // 'progress', 'ratechange', 'seeked', 'seeking', 'suspend', 'timeupdate', 
+        // 'volumechange', 'waiting'];
 
-        var events = ['abort', 'canplay', 'canplaythrough', 'durationchange', 
-        'emptied', 'ended', 'error', 'loadeddata', 'loadedmetadata', 
-        'loadstart', 'mozaudioavailable', 'pause', 'play', 'playing', 
-        'progress', 'ratechange', 'seeked', 'seeking', 'suspend', 'timeupdate', 
-        'volumechange', 'waiting'];
+        // for ( var i = 0; i < events.length; i++ ) {
+        //     var fnName = "on"+events[i][0].toUpperCase()+events[i].substring(1);
+        //     try {
+        //         var fn = eval(fnName);
+        //         element.addEventListener(events[i],fn);
+        //     } catch (e) {
+        //         // ignore
+        //     }
+        // }
 
-        for ( var i = 0; i < events.length; i++ ) {
-            var fnName = "on"+events[i][0].toUpperCase()+events[i].substring(1);
-            try {
-                var fn = eval(fnName);
-                element.addEventListener(events[i],fn);
-            } catch (e) {
-                // ignore
-            }
-        }
+        // otherwise Google closure compiler "optimizes" the functions away ..
+        element.addEventListener('error',           onError);
+        element.addEventListener('loadedmetadata',  onLoadedmetadata);
+        element.addEventListener('timeupdate',      onTimeupdate);
+        element.addEventListener('canplay',         onCanplay);
     }
 
     var onError = function (evt) {
@@ -106,7 +107,7 @@ var Movie = (function(window,document){
                 }
                 lastTime = now;
             }
-            pollerTs = setTimeout( doPoll, 1000/25.0 );
+            pollerTs = setTimeout( doPoll, 1000/fps );
         }
         doPoll();
     }
@@ -135,7 +136,7 @@ var Movie = (function(window,document){
             // var-args assumes: listener, src1, src2, …, srcN
             var l = args.shift();
             opts = {
-                src: args,
+                sources: args,
                 listener: l
             };
         } else {
@@ -143,15 +144,15 @@ var Movie = (function(window,document){
         }
 
         element = opts.element;
-        if ( !opts.element && opts.src ) {
+        if ( !opts.element && opts.sources ) {
             element = document.createElement('video');
             element.setAttribute( 'crossorigin', 'anonymous' );
             //element.setAttribute( 'poster', 'poster.gif' );
             //element.setAttribute( 'controls', 'controls' );
             //element.setAttribute( 'src', opts.src );
-            for ( var i = 0, k = opts.src.length; i < k; i++ ) {
+            for ( var i = 0, k = opts.sources.length; i < k; i++ ) {
                 var source = document.createElement('source');
-                source.setAttribute('src', opts.src[i]);
+                source.setAttribute('src', opts.sources[i]);
                 element.appendChild(source);
             }
             var container = document.createElement('div');
@@ -166,7 +167,7 @@ var Movie = (function(window,document){
 
         shouldLoop = ('loop' in element) ? element.loop : false;
 
-        if ( 'poster' in element && element.poster ) {
+        if ( ('poster' in element && element.poster) || opts.poster ) {
             posterImage = new Image();
             posterImage.onload = function () {
                 if ( element.paused ) {
@@ -200,6 +201,10 @@ var Movie = (function(window,document){
     
     Movie.prototype = {
         /*  */
+        setSourceFramesRate: function ( frameRate ) {
+            fps = frameRate;
+        },
+        /*  */
         getElement: function () {
             return element;
         },
@@ -211,7 +216,12 @@ var Movie = (function(window,document){
         /* Reads the current frame of the movie. */
         read: function () {
             frame = new sketch.PImage;
-            frame.fromHTMLImageData(element);
+            try {
+                frame.fromHTMLImageData(element);
+            } catch (e) {
+                //console.log(e);
+                throw(e);
+            }
             return frame;
         },
         /* Returns "true" when a new movie frame is available to read. */
@@ -279,11 +289,13 @@ var Movie = (function(window,document){
         /* Set the frame rate of the movie in fps */
         frameRate: function ( rate ) {
             // can't as we can not get the fps from the movie ... ideas?
-            throw( 'Please use speed() instead' );
+            //throw( 'Please use speed() instead' );
+            this.speed( rate / fps );
         },
         /* GSVideo? */
         getSourceFrameRate: function () {
-            throw( 'This is not available for web video' );
+            //throw( 'This is not available for web video' );
+            fps;
         },
         /* GSVideo? */
         goToBeginning: function () {

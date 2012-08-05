@@ -1,9 +1,20 @@
 
- - Inherit from PImage?
-   "public class Movie extends PImage implements PConstants { ... }"
+-	Catch CORS exceptions, maybe do a OPTIONS request on video?
 
- - copy pixels, return PImage for read()?
+-	pixel[] manipulation is a pain to implement as one would need 
+	to define getter, setter for each array slot. Or?
 
- - handle movieEvent()? 
-   How to pass current instance?
+-   Capture via getUserMedia()
 
+-	Find a way to get fps of video
+
+x 	Inherit from PImage?
+   	"public class Movie extends PImage implements PConstants { ... }"
+   	(solved by implementing all public/needed PImage properties and methods)
+
+x   Copy pixels[], return PImage for read()?
+ 	(same as above)
+
+x   Handle movieEvent()? 
+    How to pass current instance?
+    (internal poller-loop will trigger movieEvent on the sketch)

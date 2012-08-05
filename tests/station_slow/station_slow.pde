@@ -14,7 +14,7 @@
  {
      size( 320, 240 );
      
-     String m = "station";
+     String m = "http://motionbank-jbmf.s3.amazonaws.com/piecemaker/20120514_001_jbmf";
      movie = new Movie( this, m+".mp4", m+".ogv", m+".webm" );
      movie.speed(0.25);
      movie.loop();

@@ -23,6 +23,9 @@
  void draw ()
  {
      image( movie, 0, 0, width, height );
+     
+     fill( 255 );
+     text( "Click to advance by 1 frame", 10, 20 );
  }
  
  void movieEvent ( Movie m )

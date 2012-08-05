@@ -21,7 +21,7 @@
  {
      background( 255 );
      
-     image( movie, 0, 0 );
+     image( movie, 0, 0, width, height );
  }
  
  // movieEvent()

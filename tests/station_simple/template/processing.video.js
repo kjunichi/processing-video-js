@@ -26,29 +26,28 @@ var Movie = (function(window,document){
     }
     
     var addVideoEventListeners = function () {
-        
-        // TODO:
-        // watching properties:
-        // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object/defineProperty
 
-        // TODO:
-        // need to rewrite this so closure is not removing it from the source
+        // var events = ['abort', 'canplay', 'canplaythrough', 'durationchange', 
+        // 'emptied', 'ended', 'error', 'loadeddata', 'loadedmetadata', 
+        // 'loadstart', 'mozaudioavailable', 'pause', 'play', 'playing', 
+        // 'progress', 'ratechange', 'seeked', 'seeking', 'suspend', 'timeupdate', 
+        // 'volumechange', 'waiting'];
 
-        var events = ['abort', 'canplay', 'canplaythrough', 'durationchange', 
-        'emptied', 'ended', 'error', 'loadeddata', 'loadedmetadata', 
-        'loadstart', 'mozaudioavailable', 'pause', 'play', 'playing', 
-        'progress', 'ratechange', 'seeked', 'seeking', 'suspend', 'timeupdate', 
-        'volumechange', 'waiting'];
+        // for ( var i = 0; i < events.length; i++ ) {
+        //     var fnName = "on"+events[i][0].toUpperCase()+events[i].substring(1);
+        //     try {
+        //         var fn = eval(fnName);
+        //         element.addEventListener(events[i],fn);
+        //     } catch (e) {
+        //         // ignore
+        //     }
+        // }
 
-        for ( var i = 0; i < events.length; i++ ) {
-            var fnName = "on"+events[i][0].toUpperCase()+events[i].substring(1);
-            try {
-                var fn = eval(fnName);
-                element.addEventListener(events[i],fn);
-            } catch (e) {
-                // ignore
-            }
-        }
+        // otherwise Google closure compiler "optimizes" the functions away ..
+        element.addEventListener('error',           onError);
+        element.addEventListener('loadedmetadata',  onLoadedmetadata);
+        element.addEventListener('timeupdate',      onTimeupdate);
+        element.addEventListener('canplay',         onCanplay);
     }
 
     var onError = function (evt) {

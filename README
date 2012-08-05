@@ -1,3 +1,8 @@
+
+  import processing.video.*;
+
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
   This is an attempt at writing a JavaScript companion to an existing
   Java library, namely the Processing video library.
 	
@@ -9,5 +14,51 @@
   Note: Capture will currently not be implemented as it's not supported
   by browsers yet.
 	
-  
-  
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  Differences to the Java processing.video.Movie class
+
+  - new Movie( <PApplet>sketch, <String>path ) 
+    accepts multiple paths to support HTML5 formats:
+    new Movie( this, "video.mp4", "video.webm", "video.ogv" )
+
+  - Movie.speed() 
+    does not accept a negative value (will stop)
+
+  - Sources coming from remote locations (not same domain / port) will
+    only work when CORS is set up correctly:
+    https://developer.mozilla.org/en-US/docs/HTTP_access_control
+
+  - Movie.pixels[]
+    are read only at the moment, use Movie.get() to manipulate pixels
+
+  - Movie.speed() 
+    does not work in FireFox because of a Bug
+    https://bugzilla.mozilla.org/show_bug.cgi?id=495040
+
+  - Movie.jump() 
+    does only work in Chrome if your server is able to serve 
+    "206 partial content" (check the response header of the video request)
+
+  - Movie.setSourceFramesRate( <float>fps )
+    HTML5 video does not have a way to report the fps of a video source,
+    so you will have to set that yourself (default is 25.0). This value is 
+    used for Movie.frameRate() and returned by Movie.getSourceFrameRate()
+
+  - Movie.getElement()
+    will return the DOM <video> element used to play the movie
+
+  - Movie.getFilename()
+    returns the source (if loaded) that is actually being played. It's a
+    way to find out which of multiple sources (mp4/webm/ogv) has been loaded.
+
+  - new Movie({ sources:<array> OR element: <DOM video>,
+                listener:<object> 
+                [, poster:<string>path] })
+    for JavaScript only usage, Movie constructor also accepts an options object.
+    sources   ["video.mp4", "video.ogv", ...]
+    element   optional DOM video node, no need to provide sources then
+    listener  {}, should implement movieEvent(Movie)
+    poster    optional, path to an image to use as poster-frame
+
+
