@@ -40,7 +40,7 @@
     does only work in Chrome if your server is able to serve 
     "206 partial content" (check the response header of the video request)
 
-  - Movie.setSourceFramesRate( <float>fps )
+  - Movie.setSourceFrameRate( <float>fps )
     HTML5 video does not have a way to report the fps of a video source,
     so you will have to set that yourself (default is 25.0). This value is 
     used for Movie.frameRate() and returned by Movie.getSourceFrameRate()

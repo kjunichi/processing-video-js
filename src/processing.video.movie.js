@@ -1,3 +1,11 @@
+/**
+ *  Attempting to write a Movie.class for Processing.js
+ *
+ *  https://github.com/fjenett/processing-video-js
+ *
+ *  
+ *  fjenett - 2012
+ */
 
 var Movie = (function(window,document){
     
@@ -201,7 +209,7 @@ var Movie = (function(window,document){
     
     Movie.prototype = {
         /*  */
-        setSourceFramesRate: function ( frameRate ) {
+        setSourceFrameRate: function ( frameRate ) {
             fps = frameRate;
         },
         /*  */
