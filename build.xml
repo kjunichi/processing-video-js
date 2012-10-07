@@ -69,7 +69,7 @@
   
 	  	<mkdir dir="${dist}" />
 
-	  	<!-- <jscomp compilationLevel="simple" 
+	  	<jscomp compilationLevel="simple" 
 				warning="default" 
 		        debug="false" 
 				output="${dist}/${libName}.js"
@@ -77,9 +77,9 @@
 			<sources dir="${bin}">
 				<file name="${libName}.js" />
 			</sources>
-		</jscomp> -->
+		</jscomp>
 		
-		<copy file="${bin}/${libName}.js" todir="${dist}" />
+<!-- 		<copy file="${bin}/${libName}.js" todir="${dist}" /> -->
 		
 		<exec executable="/bin/bash">
 			<arg value="${res}/CopyDistToTests.sh"/>

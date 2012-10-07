@@ -12,7 +12,7 @@ var Movie = (function(window,document){
     var isChrome;
 
     var listeners = [];
-    var sketch;
+    var sketch, canvas, context2d;
     var element, movie, frame;
 
     var posterImage;
@@ -81,11 +81,25 @@ var Movie = (function(window,document){
         element.setAttribute('width',element.videoWidth);
         element.setAttribute('height',element.videoHeight);
         fpsToSeconds = 1000.0/element.fps;
+
+        if ( !sketch ) {
+            initCanvas();
+        }
+    }
+
+    var initCanvas = function () {
+        canvas = document.createElement('canvas');
+        canvas.setAttribute('width', element.videoWidth);
+        canvas.setAttribute('height', element.videoHeight);
+        context2d = canvas.getContext('2d');
     }
 
     var onCanplay = function (evt) {
         if ( !posterImage )
             movie.read();
+
+        if ( !sketch && !context2d )
+            initCanvas();
     }
 
     var onTimeupdate = function (evt) {
@@ -104,6 +118,9 @@ var Movie = (function(window,document){
     }
 
     var startPolling = function () {
+        if ( !sketch && !context2d )
+            initCanvas();
+
         var doPoll = function () {
             if ( element.readyState < 3 ) {
                 isAvailable = false;
@@ -177,8 +194,13 @@ var Movie = (function(window,document){
             posterImage = new Image();
             posterImage.onload = function () {
                 if ( element.paused ) {
-                    frame = new sketch.PImage();
-                    frame.fromHTMLImageData( posterImage );
+                    if ( sketch ) {
+                        frame = new sketch.PImage();
+                        frame.fromHTMLImageData( posterImage );
+                    } else {
+                        frame = new Image();
+                        frame.src = posterImage;
+                    }
                 }
             }
             posterImage.src = element.poster;
@@ -188,8 +210,12 @@ var Movie = (function(window,document){
         if ( opts.listener )
         {
             listeners.push(opts.listener);
-            sketch = opts.listener;
-            frame = new sketch.PImage();
+            if ( 'Processing' in window && Processing && opts.listener instanceof Processing ) {
+                sketch = opts.listener;
+                frame = new sketch.PImage();
+            } else {
+                frame = new Image();
+            }
         }
             
         addVideoEventListeners();
@@ -221,13 +247,20 @@ var Movie = (function(window,document){
         },
         /* Reads the current frame of the movie. */
         read: function () {
-            frame = new sketch.PImage;
-            try {
-                frame.fromHTMLImageData(element);
-                //frame.isRemote = false;
-            } catch (e) {
-                //console.log(e);
-                throw(e);
+            if ( sketch ) {
+                if (!frame) frame = new sketch.PImage;
+                try {
+                    frame.fromHTMLImageData(element);
+                    //frame.isRemote = false;
+                } catch (e) {
+                    //console.log(e);
+                    throw(e);
+                }
+            } else if ( context2d ) {
+                context2d.drawImage(element,0,0);
+                //delete frame;
+                if (!frame) frame = new Image();
+                frame.src = canvas.toDataURL('image/png');
             }
             return frame;
         },
@@ -302,7 +335,7 @@ var Movie = (function(window,document){
         /* GSVideo? */
         getSourceFrameRate: function () {
             //throw( 'This is not available for web video' );
-            fps;
+            return fps;
         },
         /* GSVideo? */
         goToBeginning: function () {
