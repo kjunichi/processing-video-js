@@ -13,8 +13,12 @@
 					this.context2d = this.canvas.getContext('2d');
 				},
 				movieEvent: function ( movie ) {
-					var frame = movie.read();
-					this.context2d.drawImage( frame, 0, 0 );
+					movie.read();
+					this.context2d.drawImage( movie.getElement(), 0, 0 );
+					
+					// or do:
+					// var frame = movie.read()
+					// this.context2d.drawImage( frame, 0, 0 );
 				}
 			}
 			// initial hook in window, let's get started
@@ -25,6 +29,7 @@
 					element: document.getElementById('player'),
 					listener: cfun
 				});
+				m.loop();
 				m.play();
 			}
 		</script>
@@ -40,6 +45,9 @@
 				<source src="http://mintgs-public-clips.commondatastorage.googleapis.com/processing/dance/charmy.webm">
 				<p>Please return with a newer/better browser, yours does not support HTML5.</p>
 			</video>
+			<p>
+				This example shows how to render a video to a canvas element.
+			</p>
 		</div>
 		<footer>
 			<p>Please see <a href="https://github.com/fjenett/processing-video-js">Github page</a> for more details.</p>

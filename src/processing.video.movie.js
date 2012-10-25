@@ -1,19 +1,27 @@
 /**
- *  Attempting to write a Movie.class for Processing.js
+ *  A Movie class for Processing.js and <canvas> 
+ *  that mimics Processing's video library
  *
  *  https://github.com/fjenett/processing-video-js
  *
+ *  See Java video library documentation:
+ *  http://processing.org/reference/libraries/video/index.html
  *  
  *  fjenett - 2012
  */
 
 var Movie = (function(window,document){
     
+    /* + + + + + + + + + + + + + + + + + + +
+     +  Private variables
+     + + + + + + + + + + + + + + + + + + + */
+
     var isChrome;
 
     var listeners = [];
     var sketch, canvas, context2d;
     var element, movie, frame;
+    var directToImage = false;
 
     var posterImage;
 
@@ -26,6 +34,10 @@ var Movie = (function(window,document){
     var fpsToSeconds;
 
     var fps = 25.0;
+
+    /* + + + + + + + + + + + + + + + + + + +
+     +  Private methods
+     + + + + + + + + + + + + + + + + + + + */
 
     var callListeners = function (meth, args) {
         for ( var i = 0, k = listeners.length; i < k; i++ ) {
@@ -140,16 +152,22 @@ var Movie = (function(window,document){
     var stopPolling = function () {
         clearTimeout(pollerTs);
     }
+  
+    /* + + + + + + + + + + + + + + + + + + +
+     +
+     +  Class Movie
+     +
+     +  http://en.wikipedia.org/wiki/Comparison_of_layout_engines_(HTML5_Media)
+     +  
+     +  https://developer.mozilla.org/en/DOM/HTMLVideoElement
+     +  https://developer.mozilla.org/en/DOM/HTMLMediaElement
+     +  https://developer-new.mozilla.org/en-US/docs/DOM/Media_events
+     +  
+     +  https://developer.mozilla.org/En/Manipulating_video_using_canvas
+     +  http://www.html5videoguide.net/presentations/HTML5_Video_LCA2011/
+     +
+     + + + + + + + + + + + + + + + + + + + */
 
-    // http://en.wikipedia.org/wiki/Comparison_of_layout_engines_(HTML5_Media)
-    
-    // https://developer.mozilla.org/en/DOM/HTMLVideoElement
-    // https://developer.mozilla.org/en/DOM/HTMLMediaElement
-    // https://developer-new.mozilla.org/en-US/docs/DOM/Media_events
-    
-    // https://developer.mozilla.org/En/Manipulating_video_using_canvas
-    // http://www.html5videoguide.net/presentations/HTML5_Video_LCA2011/
-        
     var Movie = function () {
 
         var opts = {};
@@ -188,7 +206,7 @@ var Movie = (function(window,document){
             document.body.appendChild( container );
         }
 
-        shouldLoop = ('loop' in element) ? element.loop : false;
+        shouldLoop = ('loop' in element) ? true : false;
 
         if ( ('poster' in element && element.poster) || opts.poster ) {
             posterImage = new Image();
@@ -198,7 +216,6 @@ var Movie = (function(window,document){
                         frame = new sketch.PImage();
                         frame.fromHTMLImageData( posterImage );
                     } else {
-                        frame = new Image();
                         frame.src = posterImage;
                     }
                 }
@@ -213,9 +230,20 @@ var Movie = (function(window,document){
             if ( 'Processing' in window && Processing && opts.listener instanceof Processing ) {
                 sketch = opts.listener;
                 frame = new sketch.PImage();
-            } else {
-                frame = new Image();
             }
+        }
+        if ( opts.image && 'src' in opts.image ) {
+            frame = opts.image;
+            if ( !opts.listener ) {
+                listeners.push({
+                    movieEvent: function (movie) {
+                        movie.read();
+                    }
+                });
+            }
+        } 
+        if ( !frame ) {
+            frame = new Image();
         }
             
         addVideoEventListeners();
@@ -258,9 +286,9 @@ var Movie = (function(window,document){
                 }
             } else if ( context2d ) {
                 context2d.drawImage(element,0,0);
-                //delete frame;
-                if (!frame) frame = new Image();
-                frame.src = canvas.toDataURL('image/png');
+                frame.src = canvas.toDataURL();
+            } else {
+                throw( 'unable to read() no target given' );
             }
             return frame;
         },
@@ -332,6 +360,7 @@ var Movie = (function(window,document){
             //throw( 'Please use speed() instead' );
             this.speed( rate / fps );
         },
+        /* + + + + + + + + + + + + + + + + + + + + + */
         /* GSVideo? */
         getSourceFrameRate: function () {
             //throw( 'This is not available for web video' );
@@ -341,12 +370,14 @@ var Movie = (function(window,document){
         goToBeginning: function () {
             this.jump(0);
         },
+        /* + + + + + + + + + + + + + + + + + + + + + */
         /* Java? */
         dispose: function () {
             this.stop();
             document.body.removeChild(element);
             delete element;
         },
+        /* + + + + + + + + + + + + + + + + + + + + + */
         /* ? */
         ready: function () {
             return element.readyState > 2;
@@ -359,6 +390,7 @@ var Movie = (function(window,document){
         getFilename: function () {
             return element.currentSrc;
         },
+        /* + + + + + + + + + + + + + + + + + + + + + */
         /* PImage inheritance */
         /* http://processing.org/reference/PImage.html */
         /* PImage.get */
@@ -404,9 +436,16 @@ var Movie = (function(window,document){
         /* PImage.toImageData - Processing.js internally used */
         toImageData: function () {
             return frame.toImageData.apply(frame,arguments);
+        },
+        /* + + + + + + + + + + + + + + + + + + + + + */
+        /* extras */
+        getCanvas: function () {
+            return canvas;
         }
     };
-
+    /* + + + + + + + + + + + + + + + + + + + + + */
+    /* PImage inheritance */
+    /* http://processing.org/reference/PImage.html */
     /* PImage.width */
     Movie.prototype.__defineGetter__('width',function(){
         return frame.width;
@@ -426,6 +465,7 @@ var Movie = (function(window,document){
     Movie.prototype.__defineSetter__('isRemote',function(v){
         frame.isRemote = v;
     });
+    /* + + + + + + + + + + + + + + + + + + + + + */
     /* PImage.sourceImg - Processing.js internally used */
     Movie.prototype.__defineGetter__('sourceImg',function(){
         return frame.sourceImg;

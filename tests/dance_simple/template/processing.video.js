@@ -1,36 +1,36 @@
 var Movie = function(q, f) {
-  var r, i = [], e, h, g, a, n, b, j, k = !1, s = 1, t, o = !1, u = -1, l = -1, m = 25, x = function() {
-    var b = "";
+  var r, i = [], e, g, h, a, n, b, j, k = !1, s = 1, t, o = !1, u = -1, l = -1, m = 25, w = function() {
+    var c = "";
     switch(a.networkState) {
       case a.NETWORK_EMPTY:
-        b = "Loading did not start yet.";
+        c = "Loading did not start yet.";
         break;
       case a.NETWORK_IDLE:
-        b = "Loading did not start yet.";
+        c = "Loading did not start yet.";
         break;
       case a.NETWORK_LOADING:
-        b = "Loading has not finished yet.";
+        c = "Loading has not finished yet.";
         break;
       case a.NETWORK_NO_SOURCE:
-        b = "The source provided is missing. " + a.src;
+        c = "The source provided is missing. " + a.src;
         break;
       default:
-        b = "Not sure what happened ... care to report it to fjenett@gmail.com ?"
+        c = "Not sure what happened ... care to report it to fjenett@gmail.com ?"
     }
-    alert(b)
-  }, y = function() {
+    alert(c)
+  }, x = function() {
     a.setAttribute("width", a.videoWidth);
     a.setAttribute("height", a.videoHeight);
     e || p()
   }, p = function() {
-    h = f.createElement("canvas");
-    h.setAttribute("width", a.videoWidth);
-    h.setAttribute("height", a.videoHeight);
-    g = h.getContext("2d")
-  }, z = function() {
+    g = f.createElement("canvas");
+    g.setAttribute("width", a.videoWidth);
+    g.setAttribute("height", a.videoHeight);
+    h = g.getContext("2d")
+  }, y = function() {
     j || n.read();
-    !e && !g && p()
-  }, A = function() {
+    !e && !h && p()
+  }, z = function() {
     k && r && a.currentTime === a.duration && (a.addEventListener("canplay", function() {
       a.playbackRate = s;
       a.volume = t;
@@ -38,65 +38,69 @@ var Movie = function(q, f) {
       v()
     }), clearTimeout(l), a.src = a.currentSrc)
   }, v = function() {
-    !e && !g && p();
-    var b = function() {
+    !e && !h && p();
+    var c = function() {
       if(3 > a.readyState) {
         o = !1
       }else {
-        var w = a.currentTime;
-        if(o = u !== w) {
-          for(var e = [n], c = 0, f = i.length;c < f;c++) {
-            "movieEvent" in i[c] && i[c].movieEvent.apply(i[c], e)
+        var b = a.currentTime;
+        if(o = u !== b) {
+          for(var e = [n], d = 0, f = i.length;d < f;d++) {
+            "movieEvent" in i[d] && i[d].movieEvent.apply(i[d], e)
           }
         }
-        u = w
+        u = b
       }
-      l = setTimeout(b, 1E3 / m)
+      l = setTimeout(c, 1E3 / m)
     };
-    b()
-  }, c = function() {
-    var d = {};
+    c()
+  }, d = function() {
+    var c = {};
     if(1 == arguments.length && "object" == typeof arguments[0]) {
-      d = arguments[0]
+      c = arguments[0]
     }else {
       if(2 <= arguments.length) {
-        var d = Array.prototype.slice.call(arguments), c = d.shift(), d = {sources:d, listener:c}
+        var c = Array.prototype.slice.call(arguments), d = c.shift(), c = {sources:c, listener:d}
       }else {
         throw"Wrong number of args passed to Movie()!";
       }
     }
-    a = d.element;
-    if(!d.element && d.sources) {
+    a = c.element;
+    if(!c.element && c.sources) {
       a = f.createElement("video");
       a.setAttribute("crossorigin", "anonymous");
-      for(var c = 0, h = d.sources.length;c < h;c++) {
-        var g = f.createElement("source");
-        g.setAttribute("src", d.sources[c]);
-        a.appendChild(g)
+      for(var d = 0, g = c.sources.length;d < g;d++) {
+        var h = f.createElement("source");
+        h.setAttribute("src", c.sources[d]);
+        a.appendChild(h)
       }
-      c = f.createElement("div");
-      c.style.position = "absolute";
-      c.style.left = "-10000px";
-      c.style.top = "-10000px";
-      c.appendChild(a);
-      f.body.appendChild(c)
+      d = f.createElement("div");
+      d.style.position = "absolute";
+      d.style.left = "-10000px";
+      d.style.top = "-10000px";
+      d.appendChild(a);
+      f.body.appendChild(d)
     }
-    k = "loop" in a ? a.loop : !1;
-    if("poster" in a && a.poster || d.poster) {
+    k = "loop" in a ? !0 : !1;
+    if("poster" in a && a.poster || c.poster) {
       j = new Image, j.onload = function() {
-        a.paused && (e ? (b = new e.PImage, b.fromHTMLImageData(j)) : (b = new Image, b.src = j))
+        a.paused && (e ? (b = new e.PImage, b.fromHTMLImageData(j)) : b.src = j)
       }, j.src = a.poster
     }
     i = [];
-    d.listener && (i.push(d.listener), "Processing" in q && Processing && d.listener instanceof Processing ? (e = d.listener, b = new e.PImage) : b = new Image);
-    a.addEventListener("error", x);
-    a.addEventListener("loadedmetadata", y);
-    a.addEventListener("timeupdate", A);
-    a.addEventListener("canplay", z);
+    c.listener && (i.push(c.listener), "Processing" in q && (Processing && c.listener instanceof Processing) && (e = c.listener, b = new e.PImage));
+    c.image && "src" in c.image && (b = c.image, c.listener || i.push({movieEvent:function(a) {
+      a.read()
+    }}));
+    b || (b = new Image);
+    a.addEventListener("error", w);
+    a.addEventListener("loadedmetadata", x);
+    a.addEventListener("timeupdate", z);
+    a.addEventListener("canplay", y);
     r = 0 <= q.navigator.appVersion.toLowerCase().indexOf("chrome");
     n = this
   };
-  c.prototype = {setSourceFrameRate:function(a) {
+  d.prototype = {setSourceFrameRate:function(a) {
     m = a
   }, getElement:function() {
     return a
@@ -107,11 +111,15 @@ var Movie = function(q, f) {
       b || (b = new e.PImage);
       try {
         b.fromHTMLImageData(a)
-      }catch(d) {
-        throw d;
+      }catch(c) {
+        throw c;
       }
     }else {
-      g && (g.drawImage(a, 0, 0), b || (b = new Image), b.src = h.toDataURL("image/png"))
+      if(h) {
+        h.drawImage(a, 0, 0), b.src = g.toDataURL()
+      }else {
+        throw"unable to read() no target given";
+      }
     }
     return b
   }, available:function() {
@@ -183,27 +191,29 @@ var Movie = function(q, f) {
     return b.updatePixels.apply(b, arguments)
   }, toImageData:function() {
     return b.toImageData.apply(b, arguments)
+  }, getCanvas:function() {
+    return g
   }};
-  c.prototype.__defineGetter__("width", function() {
+  d.prototype.__defineGetter__("width", function() {
     return b.width
   });
-  c.prototype.__defineGetter__("height", function() {
+  d.prototype.__defineGetter__("height", function() {
     return b.height
   });
-  c.prototype.__defineGetter__("pixels", function() {
+  d.prototype.__defineGetter__("pixels", function() {
     return b.pixels
   });
-  c.prototype.__defineGetter__("isRemote", function() {
+  d.prototype.__defineGetter__("isRemote", function() {
     return b.isRemote
   });
-  c.prototype.__defineSetter__("isRemote", function(a) {
+  d.prototype.__defineSetter__("isRemote", function(a) {
     b.isRemote = a
   });
-  c.prototype.__defineGetter__("sourceImg", function() {
+  d.prototype.__defineGetter__("sourceImg", function() {
     return b.sourceImg
   });
-  c.prototype.__defineSetter__("sourceImg", function(a) {
+  d.prototype.__defineSetter__("sourceImg", function(a) {
     b.sourceImg = a
   });
-  return c
+  return d
 }(window, document);
