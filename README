@@ -19,7 +19,7 @@
   Differences to the Java processing.video.Movie class
 
   - new Movie( <PApplet>sketch, <String>path ) 
-    accepts multiple paths to support HTML5 formats:
+    accepts multiple paths to support fallback HTML5 formats:
     new Movie( this, "video.mp4", "video.webm", "video.ogv" )
 
   - Movie.speed() 
@@ -30,7 +30,7 @@
     https://developer.mozilla.org/en-US/docs/HTTP_access_control
 
   - Movie.pixels[]
-    are read only at the moment, use Movie.get() to manipulate pixels
+    are read-only at the moment, use Movie.get() to manipulate pixels
 
   - Movie.speed() 
     does not work in FireFox because of a Bug
@@ -41,25 +41,34 @@
     "206 partial content" (check the response header of the video request)
 
   - Movie.setSourceFrameRate( <float>fps )
-    HTML5 video does not have a way to report the fps of a video source,
+    HTML5 video does not have a way to see the fps of a video source,
     so you will have to set that yourself (default is 25.0). This value is 
     used for Movie.frameRate() and returned by Movie.getSourceFrameRate()
 
   - Movie.getElement()
     will return the DOM <video> element used to play the movie
 
+  - Movie.getCanvas()
+    will return the DOM <canvas> element used to copy the image off of 
+    the <video> element
+
   - Movie.getFilename()
     returns the source (if loaded) that is actually being played. It's a
     way to find out which of multiple sources (mp4/webm/ogv) has been loaded.
 
   - new Movie({ sources:<array> OR element: <DOM video>,
-                listener:<object> 
-                [, poster:<string>path] })
+                listener:<object>,
+                [
+                  poster:<string>path,
+                  image: <DOM image>
+                ] })
     for JavaScript only usage, Movie constructor also accepts an options object.
     sources   ["video.mp4", "video.ogv", ...]
     element   optional DOM video node, no need to provide sources then
     listener  {}, should implement movieEvent(Movie)
     poster    optional, path to an image to use as poster-frame
+    image     either <img> or "new Image()", renders the video into an image.src,
+              useful if you are rendering to a texture in three.js
   
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

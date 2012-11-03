@@ -27,7 +27,7 @@ var Movie = (function(window,document){
      +
      + + + + + + + + + + + + + + + + + + + */
 
-        var Movie = function () {
+    var Movie = function () {
 
         /* + + + + + + + + + + + + + + + + + + +
          +  Private methods

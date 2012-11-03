@@ -60,6 +60,7 @@
 				<include name="*.js" />
 			</fileset>
 		</concat>
+		
 	</target>
 	
 	<!-- + + + + + + + + + + + + + + + + + + + + + + + + + + + +
