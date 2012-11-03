@@ -9,7 +9,7 @@
  import processing.video.Movie;
  
  Movie movie;
- float secPerFrame = 1.0 / 25.0;
+ float secPerFrame = 1.0 / 25;
  float currentSec = 0.0;
  
  void setup ()
